@@ -218,11 +218,6 @@ class ServiceAnalyzer:
             if match:
                 providers.add(self._normalize_provider_name(match.group(1)))
 
-        # Method 5: Infer from infrastructure patterns (Private DNS, etc.)
-        inferred = self._infer_provider_from_resource_id(resource_id)
-        if inferred:
-            providers.add(inferred)
-
         return providers
 
     def _extract_services_from_log_entry(self, entry: Dict) -> Set[str]:
@@ -324,39 +319,6 @@ class ServiceAnalyzer:
         resource_name = resource_name.title()
 
         return f"{provider_name} - {resource_name}"
-
-    def _infer_provider_from_resource_id(self, resource_id: str) -> str:
-        """
-        Infer provider from infrastructure patterns in resource ID.
-
-        Args:
-            resource_id: Azure resource ID
-
-        Returns:
-            Provider namespace or empty string
-        """
-        service_indicators = {
-            "postgres.database.azure.com": "Microsoft.DBforPostgreSQL",
-            "mysql.database.azure.com": "Microsoft.DBforMySQL",
-            "redis.cache.windows.net": "Microsoft.Cache",
-            "azurecr.io": "Microsoft.ContainerRegistry",
-            "vault.azure.net": "Microsoft.KeyVault",
-            "blob.core.windows.net": "Microsoft.Storage",
-            "queue.core.windows.net": "Microsoft.Storage",
-            "table.core.windows.net": "Microsoft.Storage",
-            "file.core.windows.net": "Microsoft.Storage",
-            "servicebus.windows.net": "Microsoft.ServiceBus",
-            "azurewebsites.net": "Microsoft.Web",
-            "documents.azure.com": "Microsoft.DocumentDB",
-            "sql.azuresynapse.net": "Microsoft.Synapse",
-        }
-
-        resource_id_lower = resource_id.lower()
-        for indicator, provider in service_indicators.items():
-            if indicator in resource_id_lower:
-                return provider
-
-        return ""
 
     def _get_essential_providers(self) -> Set[str]:
         """
