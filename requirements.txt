@@ -1,0 +1,13 @@
+# Python package dependencies
+python-dateutil>=2.8.2
+
+# System-level dependencies (install separately):
+# - Azure CLI 2.0+ (https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+# - Terraform 1.0+ (https://www.terraform.io/downloads)
+
+# Optional: If you want to use Azure SDK directly instead of CLI
+# Uncomment the following lines:
+# azure-identity>=1.12.0
+# azure-mgmt-resource>=22.0.0
+# azure-mgmt-costmanagement>=4.0.0
+# azure-mgmt-authorization>=3.0.0
