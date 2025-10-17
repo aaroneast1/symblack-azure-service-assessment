@@ -272,43 +272,6 @@ cd output/terraform
 terraform destroy
 ```
 
-### If Terraform Destroy Fails with Permission Errors
-
-If you get "Authorization_RequestDenied" or "AuthorizationFailed" errors during `terraform destroy`, you need additional permissions. This is common in enterprise environments.
-
-#### Option 1: Request Admin Assistance
-Ask your Azure administrator to grant you:
-- **Application Administrator** role in Azure AD
-- **Owner** or **User Access Administrator** role on subscriptions
-
-Then retry `terraform destroy`.
-
-#### Option 2: Manual Cleanup (Requires Admin Permissions)
-Have someone with the appropriate permissions run these commands:
-
-```bash
-# Get service principal object ID
-SP_OBJECT_ID=$(az ad sp list --display-name "SymmetryBlack-SecurityAssessment" --query "[0].id" -o tsv)
-
-# 1. Delete role assignments (requires Owner/User Access Administrator)
-az role assignment delete --assignee $SP_OBJECT_ID --scope "/subscriptions/<subscription-id>"
-# Repeat for each subscription
-
-# 2. Delete custom role definition (requires Owner)
-az role definition delete --name "SymmetryBlackSecurityAssessmentRole"
-
-# 3. Delete service principal (requires Application Administrator)
-az ad sp delete --id $SP_OBJECT_ID
-
-# 4. Delete Azure AD application (requires Application Administrator)
-APP_ID=$(az ad app list --display-name "SymmetryBlack-SecurityAssessment" --query "[0].appId" -o tsv)
-az ad app delete --id $APP_ID
-
-# 5. Clean Terraform state
-cd output/terraform
-rm -rf .terraform/ terraform.tfstate* .terraform.lock.hcl
-```
-
 ### Remove Local Files
 ```bash
 # Remove output files
