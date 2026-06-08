@@ -6,6 +6,7 @@ Provides a clean interface for executing Azure CLI commands.
 
 import subprocess
 import json
+import shutil
 import sys
 from typing import Optional, Union, Dict, List
 
@@ -16,11 +17,16 @@ class AzureClient:
     def __init__(self):
         """Initialize the Azure CLI client."""
         self.timeout_default = 120  # 2 minutes default timeout
+        # Resolve the az executable. On Windows az is a batch script (az.cmd),
+        # and subprocess with a list + no shell uses CreateProcess, which does
+        # not honor PATHEXT and therefore can't find a bare "az". shutil.which
+        # resolves the full path (incl. .cmd) cross-platform.
+        self.az = shutil.which("az") or "az"
 
     def check_cli_installed(self) -> bool:
         """Check if Azure CLI is installed."""
         try:
-            subprocess.run(["az", "--version"], capture_output=True, check=True)
+            subprocess.run([self.az, "--version"], capture_output=True, check=True)
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
@@ -51,7 +57,7 @@ class AzureClient:
         Returns:
             Parsed JSON output or error dict if allow_failure=True
         """
-        cmd = ["az"] + command + ["--output", "json"]
+        cmd = [self.az] + command + ["--output", "json"]
         timeout = timeout or self.timeout_default
 
         try:
